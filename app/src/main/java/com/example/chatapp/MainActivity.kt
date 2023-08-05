@@ -24,14 +24,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.textViewRegister.setOnClickListener {
-            binding.flipper.setInAnimation(this, android.R.anim.slide_in_left)
-            binding.flipper.setOutAnimation(this, android.R.anim.slide_out_right)
-            binding.flipper.showNext()
+            startNextAnimation()
         }
         binding.textViewSignIn.setOnClickListener {
-            binding.flipper.setInAnimation(this, R.anim.slide_in_right)
-            binding.flipper.setOutAnimation(this, R.anim.slide_out_left)
-            binding.flipper.showPrevious()
+           startPreviousAnimation()
+        }
+
+        binding.textViewGoToProfile.setOnClickListener {
+            startNextAnimation()
+        }
+        binding.textViewSignUp.setOnClickListener {
+            startPreviousAnimation()
         }
     }
 
@@ -112,5 +115,17 @@ class MainActivity : AppCompatActivity() {
                     ).show()
                 }
             }
+    }
+
+    private fun startNextAnimation() {
+        binding.flipper.setInAnimation(this, android.R.anim.slide_in_left)
+        binding.flipper.setOutAnimation(this, android.R.anim.slide_out_right)
+        binding.flipper.showNext()
+    }
+
+    private fun startPreviousAnimation() {
+        binding.flipper.setInAnimation(this, R.anim.slide_in_right)
+        binding.flipper.setOutAnimation(this, R.anim.slide_out_left)
+        binding.flipper.showPrevious()
     }
 }
