@@ -10,4 +10,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="blue_darker">#322fbf</color>
     <color name="grey_darker">#e0e0e0</color>
+
+    <color name="colorPrimary">#6361FA</color>
+    <color name="colorPrimaryVariant">#4441F4</color>
 </resources>

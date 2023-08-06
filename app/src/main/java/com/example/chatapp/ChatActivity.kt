@@ -1,9 +1,11 @@
 package com.example.chatapp
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
@@ -16,6 +18,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -49,7 +52,7 @@ class ChatActivity : AppCompatActivity() {
     private val STORAGE_REQUEST_CODE = 23231
     private lateinit var progressBar: ProgressBar
 
-
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,7 +63,6 @@ class ChatActivity : AppCompatActivity() {
         editTextMessage = findViewById(R.id.input_message)
         progressBar = findViewById(R.id.progressBarChatAct)
         storageRef = FirebaseStorage.getInstance().reference
-
 
         initRecyclerView()
         getCurrentUser()
@@ -80,7 +82,7 @@ class ChatActivity : AppCompatActivity() {
                     editTextMessage.setText("")
                     if (ActivityCompat.checkSelfPermission(
                             this@ChatActivity,
-                            android.Manifest.permission.READ_EXTERNAL_STORAGE
+                            android.Manifest.permission.READ_MEDIA_IMAGES
                         )
                         != PackageManager.PERMISSION_GRANTED
                     ) {
@@ -101,7 +103,6 @@ class ChatActivity : AppCompatActivity() {
         }
 
     }
-
 
     override fun onStart() {
         super.onStart()
@@ -141,76 +142,6 @@ class ChatActivity : AppCompatActivity() {
             }
     }
 
-    private fun insertMessage() {
-        var message = editTextMessage.text.toString()
-
-        //  current user was null !!!!!!
-        if (message.isNotEmpty()) {
-            messagesRef.document()
-                .set(ChatMessage(currentUser, message, null, ""))
-                .addOnCompleteListener {
-                    if (it.isComplete) {
-                        editTextMessage.setText("")
-                        message = ""
-                    } else {
-                        /* I write this toast by myself when message could not be send then display this message */
-                        Toast.makeText(this, "Message not sent", Toast.LENGTH_SHORT).show()
-                    }
-                }
-        }
-    }
-
-    private fun getImage() {
-        val intent = Intent(Intent.ACTION_PICK)
-        intent.type = "image/*"
-        getResult.launch(intent)
-
-        uploadImage()
-    }
-
-    private fun requestPermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(
-                this@ChatActivity,
-                android.Manifest.permission.READ_EXTERNAL_STORAGE
-            )
-        ) {
-            AlertDialog.Builder(this@ChatActivity)
-                .setPositiveButton(R.string.dialog_button_yes) { _, _ ->
-                    ActivityCompat.requestPermissions(
-                        this@ChatActivity,
-                        arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
-                        STORAGE_REQUEST_CODE
-                    )
-                }
-                .setNegativeButton(R.string.dialog_button_no) { dialog, _ ->
-                    dialog.cancel()
-                }
-                .setTitle("Permission needed")
-                .setMessage("This permission is needed for accessing the internal storage")
-                .show()
-        } else {
-            ActivityCompat.requestPermissions(
-                this@ChatActivity, arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
-                STORAGE_REQUEST_CODE
-            )
-        }
-    }
-
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray,
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == STORAGE_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            getImage()
-        } else {
-            Toast.makeText(this@ChatActivity, "Permission not granted", Toast.LENGTH_LONG).show()
-        }
-    }
-
-
     private fun initRecyclerView() {
         messages = mutableListOf()
         messagesAdaptor = MessagesAdaptor(this@ChatActivity, messages)
@@ -229,10 +160,29 @@ class ChatActivity : AppCompatActivity() {
             }
     }
 
+    private fun insertMessage() {
+        var message = editTextMessage.text.toString()
+
+
+        //  current user was null !!!!!!
+        if (message.isNotEmpty()) {
+            messagesRef.document()
+                .set(ChatMessage(currentUser, message, null, ""))
+                .addOnCompleteListener {
+                    if (it.isComplete) {
+                        editTextMessage.setText("")
+                        message = ""
+                    } else {
+
+                    }
+                }
+        }
+
+    }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.chat_menu, menu)
-        return super.onCreateOptionsMenu(menu)
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -248,6 +198,55 @@ class ChatActivity : AppCompatActivity() {
         return false
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun requestPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(
+                this@ChatActivity,
+                android.Manifest.permission.READ_MEDIA_IMAGES
+            )
+        ) {
+            AlertDialog.Builder(this@ChatActivity)
+                .setPositiveButton(R.string.dialog_button_yes) { _, _ ->
+                    ActivityCompat.requestPermissions(
+                        this@ChatActivity,
+                        arrayOf(android.Manifest.permission.READ_MEDIA_IMAGES),
+                        STORAGE_REQUEST_CODE
+                    )
+                }.setNegativeButton(R.string.dialog_button_no) { dialog, _ ->
+                    dialog.cancel()
+                }.setTitle("Permission needed")
+                .setMessage("This permission is needed for accessing the internal storage")
+                .show()
+        } else {
+            ActivityCompat.requestPermissions(
+                this@ChatActivity, arrayOf(android.Manifest.permission.READ_MEDIA_IMAGES),
+                STORAGE_REQUEST_CODE
+            )
+        }
+    }
+
+    private fun getImage() {
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.type = "image/*"
+        getResult.launch(intent)
+
+        uploadImage()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == STORAGE_REQUEST_CODE && grantResults.isNotEmpty()
+            && grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
+            getImage()
+        } else {
+            Toast.makeText(this@ChatActivity, "Permission not granted", Toast.LENGTH_LONG).show()
+        }
+    }
 
     private fun uploadImage() {
         if (this::uri.isInitialized) {
@@ -274,11 +273,13 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
-    private fun hideProgressBar() {
-        progressBar.visibility = View.GONE
-    }
 
     private fun showProgressBar() {
         progressBar.visibility = View.VISIBLE
     }
+
+    private fun hideProgressBar() {
+        progressBar.visibility = View.GONE
+    }
+
 }
